@@ -294,9 +294,7 @@ class DownloadMindDataset:
         data_folder: str = "mind_dataset", use_small: bool = True, verbose=True,
     ):
         """
-        Download a URL to a temporary file
-
-        Returns a training and test dataframes
+        Download MIND from a URL, process it and both training and test dataframes
         """
         base_url = MIND_DATA_URL
         if use_small:
