@@ -54,7 +54,7 @@ We applied our learnings from the class, experimenting and reporting the differe
 
 ## Inspiration
 
-We both work in the same team at Microsoft. Our current focus is on making AI real through research and engagements with customers for industry verticals. Our charter, in the next few months, is focusing on building out a complete set of NLP toolkit with reusable components that we can use while engaging in NLP projects. Based on past engagements and learnings, one of our focus is on text classification of news articles. This will feed into a bigger pipeline of capabilities that will be operationalized for our daily work.
+We both work on the same team at Microsoft. Our current focus is on making AI real through research and engagements with customers for industry verticals. Our charter, in the next few months, is focusing on building out a complete set of NLP toolkit with reusable components that we can use while engaging in NLP projects. Based on past engagements and learnings, one of our focus is on text classification of news articles. This will feed into a bigger pipeline of capabilities that will be operationalized for our daily work.
 
 We have been tasked to find a way to bridge the gap between this final project and our daily job in a way of creating some of these reusable components. We’ve choose to do the news classification for the following reasons:
 
