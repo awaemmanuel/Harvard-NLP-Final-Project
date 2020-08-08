@@ -30,7 +30,7 @@ def pca_plots(df, vecs, vec_type, category_list):
     )
     colors = cm.rainbow(np.linspace(0, 1, len(category_list)))
     for target, color in zip(category_list, colors):
-        indicesToKeep = df["category"] == target
+        indicesToKeep = df[df["category"] == target].index
         plt.scatter(
             principal_articles_Df.loc[indicesToKeep, "principal component 1"],
             principal_articles_Df.loc[indicesToKeep, "principal component 2"],
