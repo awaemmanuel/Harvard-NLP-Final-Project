@@ -1,73 +1,70 @@
-**ISMT S-117: Text Analytics & NLP Final Project**
-==================================================
+# ISMT S-117 |  Text Analytics Final Project 
 
-Title: Fine-tuning BERT for News Category Classification
---------------------------------------------------------
+## Title: Article Classification Using the Microsoft MIND Dataset - Evaluation of Various NLP Approaches   
 
-### Project Members:
+#### Project Members:
+ - Praneet Singh Solanki ([*prs184@g.harvard.com*](mailto:prs184@g.harvard.com))
 
-1.  Praneet Singh Solanki ([*prs184@g.harvard.com*](mailto:prs184@g.harvard.com))
-2.  Emmanuel Awa ([*ema142@g.harvard.com*](mailto:ema142@g.harvard.com))
+ - Emmanuel Awa ([*ema142@g.harvard.com*](mailto:ema142@g.harvard.com))
 
 ## Overview
 
--   **Research question -** Enable users quickly classify news articles
-    > into different categories of interest.
+When we submitted the project outline, we had described the following problems and challenges as what we wanted to solve with this final project.  
 
--   **What problem it solves -** With the influx of continuous
-    > information available, is it possible to build a system that can
-    > enable users to filter out different types of news content? This
-    > information can be further used by a recommendation engine to
-    > personalize news delivery of relevant categories to the users.
+-   **Research question -** Enable users quickly classify news articles into different categories of interest.
 
--   **What are different challenges -** Below are some challenges
+-   **What problem it solves -** With the influx of continuous information available, is it possible to build a system that can enable users to filter out different types of news content? This information can be further used by a recommendation engine to personalize news delivery of relevant categories to the users.
 
-    -   There is a lot of unstructured data. Most news articles do not
-        > follow a single pattern which would make it easy to curate.
+-   **What are different challenges -** Below are some challenges we anticipated to face and conquer.
 
-    -   The dataset we will be using has the news label, title and url
-        > of the actual news, but does not contain the actual news
-        > content. We would need to leverage BeautifulSoup and requests
-        > libraries, respectively, to scrap the content. We will need to
-        > implement an intelligent approach to the scaping such as
-        > backoff algorithm, exponential request waiting to avoid
-        > request throttling. Also we will ensure adherence to the
-        > policy of the web page we’ll be scraping from.
+    -   There is a lot of unstructured data. Most news articles do not follow a single pattern which would make it easy to curate.
 
-### Inspiration
+    -   The dataset we will be using has the news label, title and url of the actual news, but does not contain the actual news content. We had intended to write up a robust ingestion pipeline, using `BeautifulSoup` and `requests` libraries, respectively, to scrap the content. However, due to time constraints we decided to pivot and use the article title and abstract as the news content. We discuss about this in detail below.  
 
-Our team at Microsoft focuses on making AI real through research and
-engagements with customers. Our charter, in the next few months, is
-focusing on building out a complete set of NLP toolkit with reusable
-components that we can use while engaging in NLP projects. Based on past
-engagements and learnings, one of our focus is on text classification of
-news articles. This will feed into a bigger pipeline of capabilities
-that will be operationalized for our daily work.
+Based on all these interesting problems, we explored various NLP applications and approaches learned in class, gained from work and general research, to Sequence Classification, specifically news article using the [Microsoft MIND dataset](https://blogs.msn.com/mind-at-work-news-recommendation-challenge-for-researchers/) from the on-going compettion. 
 
-As members of the team, we have been tasked to find a way to bridge the
-gap between this final project and our daily job in a way of creating
-some of these reusable components. We’ve choose to do the news
-classification for the following reasons:
+Here is an excerpt describing [MIND](https://blogs.msn.com/mind-at-work-news-recommendation-challenge-for-researchers/) - Recommendation engines try to discern habits, likes and other affinity traits to anticipate what you may need or want based on past actions. News consumption can fall into these patterns: We know for instance that people go to search engines to find out more about a story, be it more background or further developments. Certain types of news and feature stories lend itself to typical user behaviors: An impending hurricane, for instance, triggers preparation research (if you’re in the path), offers of help to donate supplies or blood (if you’re nearby) and historical curiosity of past hurricanes. Even celebrity stories inspire certain common impulses: An engagement announcement will launch some to seek a peek at the ring, others to check out past (failed) relationships.
 
--   **Availability of data** - Microsoft News team realized a new
-    > challenge called
-    > [*MIND*](https://msnews.github.io/index.html#getting-start)
-    > consisting of a large corpora of news articles with labeled
-    > categories as part of a recommendation challenge. We believe this
-    > dataset can be leveraged for supervised NLP as well.
+How might a news recommendation system offer more stories, yet not fall into the trap of filter bubbles and echo chambers? The first thing is, you need a high-quality benchmark dataset. That’s where MIND comes in: a mammoth collection of anonymized data from user behavior logs of about 1 million people. Few companies in the world attract those kinds of numbers, and Microsoft News is one of them.  
 
--   **Applicability of skill set to current day job at Microsoft -** As
-    > mentioned above, we believe this final project will help us build
-    > up skills for our actual day to day work. The learnings will
-    > definitely be directly applicable.
+The goal of this project is to experiment, evaluate and build the news/article classification pipeline that can be leveraged ina news recommendation engine.  The recommendation engine is out of scope for this project, due to the limited timeframe, but is our north star for future work that we intend to do 
 
--   **Research** - Text classification is a good place to start building
-    > up NLP project portfolios
 
--   **Relevance -** With the current climate of fake news, having a
-    > system that can distinguish what a news article is can feed into a
-    > bigger system that can further classify if the news is real or
-    > fake
+#### Data Source   
+
+The MIND datasets are stored in the West/East US data centers making it readily available, geographically, for anyone that is interested in participating in the competition.  
+
+
+#### NLP Techniques Summary 
+
+We applied our learnings from the class, experimenting and reporting the different NLP approaches. Below is a summary of what this notebook covers. Details will be expanded upon as we go along. 
+
+1. Tokenization strategies  
+
+1. Vectorization using CountVectorization, TfIdfVectorization  
+
+1. Topic Modelling using NMF and LDA  
+
+1. Larger context vectorization using GloVE 
+
+1. Visualizing the vectors using PCA
+
+1. Finally fine-tuning the data on Multiple Transformer Models  
+
+
+## Inspiration
+
+We both work in the same team at Microsoft. Our current focus is on making AI real through research and engagements with customers for industry verticals. Our charter, in the next few months, is focusing on building out a complete set of NLP toolkit with reusable components that we can use while engaging in NLP projects. Based on past engagements and learnings, one of our focus is on text classification of news articles. This will feed into a bigger pipeline of capabilities that will be operationalized for our daily work.
+
+We have been tasked to find a way to bridge the gap between this final project and our daily job in a way of creating some of these reusable components. We’ve choose to do the news classification for the following reasons:
+
+-   **Availability of data** - Microsoft News team realized a new challenge called [*MIND*](https://msnews.github.io/index.html#getting-start) consisting of a large corpora of news articles with labeled categories as part of a recommendation challenge. We believe this dataset can be leveraged for supervised NLP as well.
+
+-   **Applicability of skill set to current day job at Microsoft -** As mentioned above, we believe this final project will help us build up skills for our actual day to day work. The learnings will definitely be directly applicable.
+
+-   **Research** - Text classification is a good place to start building up NLP project portfolios
+
+-   **Relevance -** With the current climate of fake news, having a system that can distinguish what a news article is can feed into a bigger system that can further classify if the news is real or fake.
 
 ## Dataset 
 
@@ -134,7 +131,7 @@ As mentioned in the dataset description, we have used the Title and Abstract of 
     ![](assets/images/PCA_Vecs.png)
 
 
-### Methodology
+## Methodology
 
 Text Sequence classification is a supervised learning method of learning and predicting the category or the class of a document or text sequence given its text content.  As earlier mentioned in the overview, in this project we experimented, evaluated and built the news/article classification pipeline that can be leveraged in a news recommendation engine.  
 
@@ -231,7 +228,7 @@ Transfer Learning, a concept borrowed from Computer Vision, can now be applied o
 
 
 
-### **Fine tuning**   
+## **Fine tuning For Article Classification**   
 
 As these models are trained on very large datasets, which includes multilingual corpora, we will need to fine-tune our classifier specifically for the news article category task. When fine-tuning for any task, additional data, not used in the pre-trained model, is used to change the weights on lower levels so that your model is better prepared for the context of news category prediction.  
 
@@ -296,7 +293,7 @@ For optimization, we used the `AdamW` optimizer. A few interesting parameters we
 - `linear_schedule_with_warmup`: A learning rate schedule where we linearly increase the learning rate from a low rate to a constant rate thereafter This helps the model reduce its volatility during the the early training steps.
 
 
-### **Model Evaluation and Results**  
+## **Model Evaluation and Results**  
 Our evaluation metrics for this final project was model accuracy and F1 scores of the classified categories. We also report the fine-tuning/training time in hours for all the models. 
 
 Among the vectorizers we tried out with `LinearSVC`, using `TfIdfVectorizer` performs the best. However, `XLNet-base-cased` performed the best overall.  
@@ -355,7 +352,7 @@ This pipeline shows how to operationalize(o16n) the trained model and promote it
 
 **The deployed model will expose an API endpoint, which when called with input parameters, will provide a response indicating the category of the news article.**
 
-### Conclusion  
+## Conclusion  
 
 In conclusion, to see our project working, please see the provided notebook and the code scripts. The notebook will walk you through the various NLP techniques; from classical (`LinearSVC`) to State-Of-The-Art (SOTA) transformer models.  
 
@@ -366,7 +363,7 @@ We used the Microsoft MIND at Work News Recommendation dataset to fine-tune news
 #### Code 
 We created reusable wrappers of code that makes it easy to abstract the data processing, tokenization, vectorization and fine-tuning of models. Our wrappers make it easy to expand to other models supported by the Hugging Face PyTorch library for single sentence sequence classification.  
 
-### Future Work  
+## Future Work  
 
 1. Build a news recommendation engine that uses our fine-tuned models  
 
@@ -375,7 +372,7 @@ We created reusable wrappers of code that makes it easy to abstract the data pro
 1. Create a UI component and application  
 
 
-### References  
+## References  
 
 1. [Microsoft MIND at work:](https://blogs.msn.com/mind-at-work-news-recommendation-challenge-for-researchers/)  News recommendation competition open to researchers and publishers
 
