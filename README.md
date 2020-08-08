@@ -6,6 +6,23 @@
  - Praneet Singh Solanki ([*prs184@g.harvard.com*](mailto:prs184@g.harvard.com))
 
  - Emmanuel Awa ([*ema142@g.harvard.com*](mailto:ema142@g.harvard.com))
+ 
+
+#### Project GitHub Details
+ - [Report.md](https://github.com/awaemmanuel/Harvard-NLP-Final-Project/blob/master/README.md)
+ - [Code](https://github.com/awaemmanuel/Harvard-NLP-Final-Project)
+
+#### Colab Upload Instructions
+1. Download the GitHub/submitted and zipped GitHub project. 
+2. Extract files to local directory.
+3. Upload `final_project_article_classification.ipynb` to Google Colab. This can be found under the `src` folder.   
+4. Make a folder on Google Colab, named `common` to house the extra python scripts needed to run this notebook.    
+5. Select all the Python files found under the `src/common` into the `common` folder you created on Google Colab
+6. There are no data files provided. Our notebook does not need them. We've written utilities/wrappers to handle and make data ingestion easy. Please see below.
+ 
+#### **NOTE:** DATA FILES NOT NEEDED  
+
+This notebook does not need any data files. Our utility will handle downloading the data from a public **Azure Blob Storage**, pre-process and return the needed data frames to run this.  
 
 ## Overview
 
