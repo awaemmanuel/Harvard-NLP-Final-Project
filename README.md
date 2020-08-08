@@ -79,6 +79,13 @@ The MIND dataset is publicly available for research. We plan to take the [news.t
 * Title Entities (entities contained in the title of this news)
 * Abstract Entities (entites contained in the abstract of this news)
 
+#### Dataset size  
+
+The provided data is about 160k English news articles
+* Training Data: 100k
+* Test/Validation: 60k  
+
+
 An example is shown in the following table:
 
 Column | Content
