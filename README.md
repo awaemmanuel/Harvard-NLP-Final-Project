@@ -101,13 +101,13 @@ unlabeled news articles. The labeled articles then can be used by a recommendati
 
 ## Exploratory Data Analysis
 
-As mentioned in dataset description, we have used the Title and Abstract of the article to predict the category of that article. Following are the exploratory data analysis we did:
+As mentioned in the dataset description, we have used the Title and Abstract of the article to predict the category of that article. Following are the exploratory data analysis we did:
 
 1. Clean up data and filter to use required features
 
 1. Check the division of dataset by categories
 
-![](assets/images/article_categories.png)
+    ![](assets/images/article_categories.png)
 
 1. Use tokenizer to remove unnecessary words/characters
 
@@ -117,18 +117,18 @@ As mentioned in dataset description, we have used the Title and Abstract of the 
 
 1. Analysis of to 10 words for each news category
 
-    - Top 10 words for each category using CV and TFIDF Vecs
+    - Top 10 words for each category using CV and TFIDF Vecs. We can clearly see that the top 10 words for each category are very relevant for that category for both TF-IDF and CV.
 
     ![](assets/images/vecs_top_10.png)
 
-    - Top 10 words for each topic usinNMF and LDA Vecs
+    - Top 10 words for each topic using NMF and LDA Vecs. Here, we can see topics have words which indicate the category they belong to, some topics the evidence of which category it represent is very clear.
 
     ![](assets/images/topic_top_n.png)
 
 
 1. PCA Analysis on CountVectorizer, TF-IDF, LDA, NMF and Glove vectors
 
-![](assets/images/PCA_Vecs.png)
+    ![](assets/images/PCA_Vecs.png)
 
 
 ## Methodology
@@ -195,7 +195,7 @@ def tokenize_doc(doc: str,
 ```
 
 ### **Learning embeddings**  
-In this project we evaluated classical NLP approaches and contrasted that with more SOTA transformer models. We started by learning embeddings of the text using the following two vectorizers and two document level decompositon topic models; `CountVectorizer`, `TfIdfVectorizer`, `GloVe`, `NMF` and `LDA` respectively.  
+In this project we evaluated classical NLP approaches and contrasted that with more SOTA transformer models. We started by learning embeddings of the text using the following two vectorizers and two document level decompositon topic models; `CountVectorizer`, `TfIdfVectorizer`, `GloVe`, `NMF` and `LDA` respectively. We used SVC model and fitted it with embeddings from each of them. 
 
 For the SOTA transformer models, we evaluated three transformer models; `DistilBERT`, `RoBERTa` and `XLNet`. For each model we learned the embeddings of that particular model, leveraging the model's implementation from [Hugging Face](https://huggingface.co) library.   
 
