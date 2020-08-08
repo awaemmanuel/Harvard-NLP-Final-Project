@@ -6,8 +6,7 @@ Title: Fine-tuning BERT for News Category Classification
 
 ### Project Members:
 
-1.  Praneet Singh Solanki
-    > ([*prs184@g.harvard.com*](mailto:prs184@g.harvard.com))
+1.  Praneet Singh Solanki ([*prs184@g.harvard.com*](mailto:prs184@g.harvard.com))
 
 2.  Emmanuel Awa ([*ema142@g.harvard.com*](mailto:ema142@g.harvard.com))
 
@@ -143,40 +142,178 @@ category of that article. Here are the proposed EDA steps:
 
 ### Methodology
 
-Text classification is a supervised learning method of learning and
-predicting the category or the class of a document given its text
-content. With this we will need to perform the following steps
+Text Sequence classification is a supervised learning method of learning and predicting the category or the class of a document or text sequence given its text content.  As earlier mentioned in the overview, in this project we experimented, evaluated and built the news/article classification pipeline that can be leveraged in a news recommendation engine.  
 
-1.  **Document ingestion and preprocessing -** The MIND challenge
-    > provides the dataset with the URL of the actual news articles. We
-    > would need to build out a robust ingestion pipeline to fetch all
-    > the news content, preprocess and save to flat files. Python
-    > requests package and BeautifulSoup will be used here as it
+We pointed out that the recommendation engine is out of scope for this project, due to the limited timeframe. However, it still remains a north star in our planned future work.  
 
-2.  **Tokenization Strategy -** We will be employing the tokenization
-    > strategy we learned in class; removing stop words, punctuations,
-    > and urls. Spacy library will be used here.
+We performed the following steps in order from top to bottom: 
 
-3.  **Learning embeddings -** We will be learning the embeddings of the
-    > news text using DistilBERT from hugging face library. We chose
-    > distillbert because it’s a state-of-the-art transformer model that
-    > is knowledge distilled from BERT, achieving similar accuracies
-    > while having much lesser parameters for training and inference.
+### **Article ingestion and preprocessing**  
 
-4.  **Model training -** The learned BERT embeddings will be fed into a
-    > pre trained DistillBERT uncased architecture from Hugging Face
-    > library
+The [Microsoft MIND at Work challenge](https://www.microsoft.com/en-us/research/academic-program/mind-news-recommendation-challenge/) provides the dataset with the URL of the actual news articles. Our initial intention was to use `BeautifulSoup` and `requests` library to build out a robust ingestion pipeline that fetchs all the news content, preprocess and save to flat files.  
 
-5.  **Fine tuning -** As these models are trained on very large
-    > datasets, which includes multilingual corpora, we will need to
-    > fine-tune our classifier specifically for the news article
-    > category task. When fine-tuning for any task, additional data, not
-    > used in the pre-trained model, is used to change the weights on
-    > lower levels so that your model is better prepared for the context
-    > of news category prediction.
+Based on the feedback we received, this robust ingestion piece would take a lot time to build. There we pivoted into using a concatenation of the article **title** and **abstract** to represent the news content. The reasoning behind this is that the title + abstract is a summarized and condensed version of the full article; holding the complete context and crux of that particular article.  
 
-6.  **Model Evaluation -** Our evaluation metrics for this final project
-    > would be the F1 scores of the classified categories.
+For ingestion, we implemented the following utility that leverages some code provided for the competition:  
+
+- **DownloadMindDataset**: This is a utility class we wrote that handles downloading of the MIND dataset, if it does not exist, extracts the data, does some initial processing and returns a tuple of train and test dataframes. The class has the following static methods:  
+    - `download_from_url`: This method is responsible for downloading the MIND dataset from Azure Storage Blobs. It downloads a URL to a temporary file for further processing.   
+    
+    - `process_and_load_dfs`: Download MIND from a URL, process it and both training and test dataframes
+
+### **Tokenization Strategy**  
+We employed the tokenization strategy we learned in class. This very easy to using `Spacy` library functionalities. The nlp model used was the `en_core_web_sm`. 
+
+```
+from spacy.lang.en import English
+def load_spacy_english_model(name: str = "en_core_web_sm") -> English:
+  """ Load a spacy English model"""
+  assert name.startswith("en"), "[ERROR] - Model returns a Spacy English model."
+  return spacy.load(name) 
+
+```
+After loading in the`Spacy` model, we proceeded to removing stop words, punctuations, and urls and then finally lemmatized and normalized the final text.  
+
+```
+def lemmatize(token: str) -> str:
+  """ Returns lemmatized token """
+  return token.lemma_ 
+
+def normalize(token: str, do_lemma: bool = True) -> str:
+  """ Normalize and Lemmatize token """
+  return lemmatize(token).lower() if do_lemma else token.lower()
+
+def is_acceptable_token(token: str) -> bool:
+  """ Checks if a token is acceptable and not punction or url """
+  return (not token.is_punct) & (not token.like_url) & token.is_alpha & (not token.is_stop)
+```  
+
+With the above helper functions defined, for each sentence sequence, we obtained a normalized, lemmatized and tokenized list of tokens.  
+
+```
+# Load Spacy model
+nlp = load_spacy_english_model()
+
+# Return a list of tokenized text
+def tokenize_doc(doc: str, 
+                 model = nlp) -> List:
+  """ Tokenize a single document """
+  parsed = model(doc)
+  acceptable_tokens = list(filter(is_acceptable_token, parsed))
+  return list(map(normalize, acceptable_tokens))
+```
+
+### **Learning embeddings**  
+In this project we evaluated classical NLP approaches and contrasted that with more SOTA transformer models. We started by learning embeddings of the text using the following two vectorizers and two document level decompositon topic models; `CountVectorizer`, `TfIdfVectorizer`, `GloVe`, `NMF` and `LDA` respectively.  
+
+For the SOTA transformer models, we evaluated three transformer models; `DistilBERT`, `RoBERTa` and `XLNet`. For each model we learned the embeddings of that particular model, leveraging the model's implementation from [Hugging Face](https://huggingface.co) library.   
+
+We chose `distilBert, Roberta` and `XLNet` because of their size compared to other larger transformer models like Microsoft's `MT-DNN`, Google's `BERT-base` and `T5`. 
+
+### **Model training - Evaluation of LinearSVC vs Transformer Based Models**   
+ 
+First, for classical methods, we chose `LinearSVC` as it works very well with the above mentioned token and document level decomposition vectorizers.  
+
+Secondly, we wanted to compare the performance of this classical method, on various tokenization and vectorization strategies tried out earlier, against some State-Of-The-Art (SOTA) transformer based models that can be used in sequence classification problems. The learned embeddings were fed into pre-trained transformer-based architectures. 
+
+For this, we used Hugging Face PyTorch's implementation of these transformer based models.  
+
+#### Selecting Pretrained Models
+Recently, we have experienced a break-through in the world of NLP. There is abundant data and compute is a lot better and attainable to get and use. This has given birth to transformer models starting from [BERT: Pre-training of Deep Bidirectional Transformers for Language Understanding](https://arxiv.org/abs/1810.04805) (Devlin et. al). It seems like a new transformer model is released by the research community every week.  
+
+The challenge is that these transformer based models are trained with a lot of parameters, making it too large to use in production. Operationalization costs for these large models on-the-edge and/or under constrained computational training or inference budgets remains challenging, that is where transfer learning comes in.      
+ 
+Transfer Learning, a concept borrowed from Computer Vision, can now be applied on text; leading to smaller (knowledge distilled) student models, with similar architecture as their teacher models, that still have great performances. Transfer learning from very large pre-trained models has become more prevalent in Natural Language Processing (NLP). 
+
+ Several distilled pretrained models have been made available by [Hugging Face](https://github.com/huggingface/transformers). Some of these models can be used for text/sequence classification.  
+ 
+ As mentioned, we used `distilBert, Roberta` and `XLNet` because of their size compared to other larger transformer models.  Below is a brief overview of these models.
+ 
+- [DistilBERT](https://huggingface.co/transformers/model_doc/distilbert.html) is a small, fast, cheap and light Transformer model trained by distilling Bert base. It has 40% less parameters than bert-base-uncased, runs 60% faster while preserving over 95% of Bert’s performances as measured on the GLUE language understanding benchmark. 
+
+- [RoBERTa](https://huggingface.co/transformers/model_doc/roberta.html) was proposed in [RoBERTa: A Robustly Optimized BERT Pretraining Approach](https://arxiv.org/abs/1907.11692) (Liu et.al). It is based on Google’s BERT model released in 2018. RoBERTa builds upon BERT, modifying key hyperparameters, removing the next-sentence pretraining objective and training with much larger mini-batches and learning rates.  
+
+- [XLNet](https://huggingface.co/transformers/model_doc/xlnet.html) was proposed in [XLNet: Generalized Autoregressive Pretraining for Language Understanding](https://arxiv.org/abs/1906.08237) (Yang et. al). XLnet is an extension of the Transformer-XL model pre-trained using an autoregressive method to learn bidirectional contexts by maximizing the expected likelihood over all permutations of the input sequence factorization order.  
+
+
+
+### **Fine tuning**   
+
+As these models are trained on very large datasets, which includes multilingual corpora, we will need to fine-tune our classifier specifically for the news article category task. When fine-tuning for any task, additional data, not used in the pre-trained model, is used to change the weights on lower levels so that your model is better prepared for the context of news category prediction.  
+
+#### Target Label Pre-processing and Encoding
+
+We first started by encoding the target label in the format the transformer models can use. For this we use the `LabelEncoder` from `skLearn` to tranform our target article labels. `LabelEncoder` encodes target labels with value between 0 and $n\_classes-1$. 
+
+```
+label_encoder = LabelEncoder()
+df_train[LABEL_COL] = label_encoder.fit_transform(df_train[LABEL_COL])
+df_test[LABEL_COL] = label_encoder.transform(df_test[LABEL_COL])
+```
+
+> **NOTE:** `LabelEncoder` should be used to transform and encode just the target values.  
+
+
+After running the above code, in addition to the preprocessing steps highlighted during the EDA, the data is now ready for fine-tuning on the train and test data splits.  
+
+#### Model Fine-tuning on News Article Data
+
+For this part, we chose an engineering design that abstracts the model fine-tuning code into reusable components that make it easy to build `sklearn` style of pipelines. The decision to approach it this way was to make the code more readable, less bloated on the notebook, and be also production ready to be used in future projects. We've described, below in details, the various classes we have defined and created.  
+
+Our wrappers make it easy to fine-tune different models in a unified way, hiding the preprocessing details that are needed before training. In this example, we're going to select the following models, listed below, and use the same piece of code to fine-tune them on our articles classification task. 
+
+> **NOTE:** -  We leveraged the Hugging Face `AutoModels`. It expands the scope of the models supported with our wrappers.  
+
+
+
+1. **ArticleTransformer**: This is a transfomer base class that abstracts all the functionality expected from a PyTorch transfomer models. It provides abstractions for setting up model parameters like saving and loading a trained checkpoint, creating a default optimizer and scheduler, setting up the model seed, parallelizing and distributing the tensors to all the GPUs available and more. Most importantly, it abstracts the following methods that will be have a concrete implementation in classes that inherit this:
+    - `fine_tune` - Provides the ability to use your data on pre-trained models for a specific NLP scenario.  
+    - `predict` - Provides the ability to predict the model's performance on data. It evaluates the accuracy of `y_pred` when compared to `y_true`.  
+
+1. **ArticleClassifier**:  This inherits from the **ArticleTransfomer** class. It implements the following methods based
+    - `fit`: This is a wrapper, and implementation of the `fine_tune` function from the parent class. This function helps to fine-tune a pre-trained sequence classification model.
+    - `predict`: This function helps to score a dataset using a fine-tuned model and a given dataloader.
+
+1. **ArticleClassificationDataProcessor**: This class for implements functionality for preprocessing the article classification data. The following are the major methods
+    - `create_dataset_from_dataframe`: This takes a Pandas dataframe, processes it and converts it into a PyTorch dataset.
+    - `create_dataset_from_dataframe`: This takes a PyTorch dataset, processes it and converts it into a PyTorch dataloader.  
+    - `get_inputs`: This creates an input dictionary, given a model name, which contains the input ids, segment ids, masks, and labels. The labels are only returned when `train_mode` is True.
+    - `text_transform`: This function is used for sequence classification. The function can be passed to a map-style PyTorch DataSet.
+
+1. **ArticleClassificationDataSet**: This inherits from PyTorch Dataset and creates a dataset for a single article/sequence classification tasks.
+
+
+> **NOTE:** All code wrappers and utilities can be found under the [src/common](./common) folder.  
+
+During the model training, for each pretrained model, we preprocess the data, create PyTorch datasets from dataframes, convert those datasets into dataloaders. Then we fine-tune the classifier, using the dataloaders, score on the test set, and store the evaluation results.  
+
+For optimization, we used the `AdamW` optimizer. A few interesting parameters we used as hyperparameters to our classifier are as follows: 
+
+- `weight_decay`: An optional float value for the weight decay to apply after each parameter update. By default it's set to 0.0.  
+
+- `learning_rate`: An optional float value of the `AdamW` optimizer. This helps the model avoid overfitting to the train data. By default it is set to $5e^\-5$.  
+
+- `adam_epsilon`: An optional float value of the AdamW optimizer. By default it is set to $1^e\-8$.  
+
+- `warmup_steps`: An optional integer value that defines the number of steps taken to increase learning rate from 0 to the above defined `learning rate`. By default it is set to 0. 
+
+- `fp16`: A boolean value that is set if we would like to use 16-bit mixed precision through Apex. This is out of scope for this project, but we have just added it as it makes the code more robust for a distributed framework. By default it is set to `False`.  
+
+- `linear_schedule_with_warmup`: A learning rate schedule where we linearly increase the learning rate from a low rate to a constant rate thereafter This helps the model reduce its volatility during the the early training steps.
+
+
+### **Model Evaluation and Results**  
+Our evaluation metrics for this final project was model accuracy and F1 scores of the classified categories. We also report the fine-tuning/training time in hours for all the models. 
+
+Among the vectorizers we tried out with `LinearSVC`, using `TfIdfVectorizer` performs the best. However, `XLNet-base-cased` performed the best overall.  
+Finally, we report the accuracy and F1-score metrics for each model, 
+
+Below are the final results for all the approaches we explored.
+
+![Final Results](./assets/images/final_results.JPG)
+
+> For the sake of time, matching up to the classical method and computation cost, we to fine-tune the model on just a single epoch. We already observed very good accuracy, however, please modify `NUM_EPOCHS` to increase the number of epochs. 
+
 
 ### Deployment Strategy
 
@@ -194,4 +331,33 @@ Azure Machine Services for following:
 
 The deployed model will expose an API endpoint, which when called with
 input parameters, will provide a response indicating the category of the
-news article.
+news article.  
+
+
+### Conclusion  
+
+In conclusion, to see our project working, please see the provided notebook and the code scripts. The notebook will walk you through the various NLP techniques; from classical (`LinearSVC`) to State-Of-The-Art (SOTA) transformer models.  
+
+#### Data and Results
+We used the Microsoft MIND at Work News Recommendation dataset to fine-tune news article classification. We see that just for a single epoch, the `xlnet-base-cased` performs the best on the small dataset from MIND at Work. This confirms our hypothesis, that transformer models are indeed SOTA and should outperform classical methods for text classification.  
+
+
+#### Code 
+We created reusable wrappers of code that makes it easy to abstract the data processing, tokenization, vectorization and fine-tuning of models. Our wrappers make it easy to expand to other models supported by the Hugging Face PyTorch library for single sentence sequence classification.  
+
+### Future Work  
+
+1. Build a news recommendation engine that uses our fine-tuned models  
+
+1. Plug in our wrappers and make it easy to switch between various fine-tuned models for text classification  
+
+1. Create a UI component and application  
+
+
+### References  
+
+1. [Microsoft MIND at work:](https://blogs.msn.com/mind-at-work-news-recommendation-challenge-for-researchers/)  News recommendation competition open to researchers and publishers
+
+1. [Microsoft NLP Recipes](https://github.com/microsoft/nlp-recipes)
+
+1. [Hugging Face Transformers](https://github.com/huggingface/transformers)
